@@ -1,4 +1,11 @@
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <fcntl.h>
 #include "lib_tar.h"
+#
 
 /**
  * Checks whether the archive is valid.
@@ -16,6 +23,9 @@
  *         -3 if the archive contains a header with an invalid checksum value
  */
 int check_archive(int tar_fd) {
+    struct posix_header *header1 = malloc(sizeof(struct posix_header));
+    read(tar_fd,header1, sizeof(struct posix_header));
+    printf("%s\n",header1->name);
     return 0;
 }
 
