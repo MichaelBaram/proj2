@@ -38,18 +38,25 @@ int check_archive(int tar_fd) {
             continue;
         }
         if(strcmp(header->magic,TMAGIC)!=0){
+            lseek(tar_fd,0,SEEK_SET);
             return -1;
         }
         if(strcmp(header->version,TVERSION)!=0){
+            lseek(tar_fd,0,SEEK_SET);
             return -2;
         }
         if(sum!=(TAR_INT(header->chksum))){
+            lseek(tar_fd,0,SEEK_SET);
             return -3;
         }
 
-        unsigned int size = TAR_INT(header->size)/512;
-        lseek(tar_fd,(size+1)*512,SEEK_CUR);
+        unsigned int size = TAR_INT(header->size);
+        if(size!=0){
+            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }
     }
+
+    lseek(tar_fd,0,SEEK_SET);
 
     return 0;
 }
@@ -64,6 +71,21 @@ int check_archive(int tar_fd) {
  *         any other value otherwise.
  */
 int exists(int tar_fd, char *path) {
+    struct posix_header *header = malloc(sizeof(struct posix_header));
+    while(read(tar_fd,header, sizeof(struct posix_header))>0){
+
+        if(strcmp(path,header->name)==0){
+            lseek(tar_fd,0,SEEK_SET);
+            return 1;
+        }
+
+        unsigned int size = TAR_INT(header->size);
+        if(size!=0){
+            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }
+
+    }
+    lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
 
@@ -77,6 +99,23 @@ int exists(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int is_dir(int tar_fd, char *path) {
+    struct posix_header *header = malloc(sizeof(struct posix_header));
+    while(read(tar_fd,header, sizeof(struct posix_header))>0){
+
+        if(strcmp(path,header->name)==0){
+            if(header->typeflag==DIRTYPE){
+                lseek(tar_fd,0,SEEK_SET);
+                return 1;
+            }
+        }
+
+        unsigned int size = TAR_INT(header->size);
+        if(size!=0){
+            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }
+
+    }
+    lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
 
@@ -90,6 +129,23 @@ int is_dir(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int is_file(int tar_fd, char *path) {
+    struct posix_header *header = malloc(sizeof(struct posix_header));
+    while(read(tar_fd,header, sizeof(struct posix_header))>0){
+
+        if(strcmp(path,header->name)==0){
+            if(header->typeflag==REGTYPE || header->typeflag==AREGTYPE){
+                lseek(tar_fd,0,SEEK_SET);
+                return 1;
+            }
+        }
+
+        unsigned int size = TAR_INT(header->size);
+        if(size!=0){
+            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }
+
+    }
+    lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
 
@@ -102,6 +158,23 @@ int is_file(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int is_symlink(int tar_fd, char *path) {
+    struct posix_header *header = malloc(sizeof(struct posix_header));
+    while(read(tar_fd,header, sizeof(struct posix_header))>0){
+
+        if(strcmp(path,header->name)==0){
+            if(header->typeflag==LNKTYPE){
+                lseek(tar_fd,0,SEEK_SET);
+                return 1;
+            }
+        }
+
+        unsigned int size = TAR_INT(header->size);
+        if(size!=0){
+            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }
+
+    }
+    lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
 
