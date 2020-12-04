@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <fcntl.h>
+#include <string.h>
 #include "lib_tar.h"
 #
 
@@ -23,9 +24,33 @@
  *         -3 if the archive contains a header with an invalid checksum value
  */
 int check_archive(int tar_fd) {
-    struct posix_header *header1 = malloc(sizeof(struct posix_header));
-    read(tar_fd,header1, sizeof(struct posix_header));
-    printf("%s\n",header1->name);
+    struct posix_header *header = malloc(sizeof(struct posix_header));
+    while(read(tar_fd,header, sizeof(struct posix_header))>0){
+        long sum = 0;
+        for(int i =0; i<512;i++){
+            if(i>=148&&i<156){
+                sum += ' ';
+            }
+            char* c = (char*) header+i;
+            sum += *c;
+        }
+        if(sum==256){
+            continue;
+        }
+        if(strcmp(header->magic,TMAGIC)!=0){
+            return -1;
+        }
+        if(strcmp(header->version,TVERSION)!=0){
+            return -2;
+        }
+        if(sum!=(TAR_INT(header->chksum))){
+            return -3;
+        }
+
+        unsigned int size = TAR_INT(header->size)/512;
+        lseek(tar_fd,(size+1)*512,SEEK_CUR);
+    }
+
     return 0;
 }
 
