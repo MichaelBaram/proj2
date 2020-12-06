@@ -48,5 +48,11 @@ int main(int argc, char **argv) {
     ret = is_file(fd,argv[2]);
     printf("is_file returned %d\n", ret);
 
+    /*size_t* entries = malloc(sizeof(size_t));
+
+    ret = list(fd,argv[2],buf,entries);
+    printf("list returned %d\n", ret);*/
+
+    close(fd);
     return 0;
 }

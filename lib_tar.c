@@ -73,7 +73,7 @@ int check_archive(int tar_fd) {
 int exists(int tar_fd, char *path) {
     struct posix_header *header = malloc(sizeof(struct posix_header));
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
-
+        printf("%s\n",header->name);
         if(strcmp(path,header->name)==0){
             lseek(tar_fd,0,SEEK_SET);
             return 1;
@@ -193,7 +193,29 @@ int is_symlink(int tar_fd, char *path) {
  *         any other value otherwise.
  */
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
-    return 0;
+    struct posix_header *header = malloc(sizeof(struct posix_header));
+    size_t lenPath = strlen(path);
+    int index = 0;
+    while(read(tar_fd,header, sizeof(struct posix_header))>0){
+        char* str = malloc(sizeof(char)*lenPath);
+        char* strToCmp = strncat(str,header->name,lenPath);
+        if(strcmp(path,strToCmp)==0){
+            *entries[index] = *header->name;
+            index++;
+        }
+
+        unsigned int size = TAR_INT(header->size);
+        if(size!=0){
+            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }
+
+    }
+    *no_entries=index;
+    if(index==0){
+        return 0;
+    }
+    lseek(tar_fd,0,SEEK_SET);
+    return 1;
 }
 
 /**
