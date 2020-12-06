@@ -40,14 +40,14 @@ int main(int argc, char **argv) {
     int ret = check_archive(fd);
     printf("check_archive returned %d\n", ret);
 
-    ret = exists(fd,argv[2]);
-    printf("exists returned %d\n", ret);
+    //ret = exists(fd,argv[2]);
+    //printf("exists returned %d\n", ret);
 
-    ret = is_dir(fd,argv[2]);
-    printf("is_dir returned %d\n", ret);
+    //ret = is_dir(fd,argv[2]);
+    //printf("is_dir returned %d\n", ret);
 
-    ret = is_file(fd,argv[2]);
-    printf("is_file returned %d\n", ret);
+    //ret = is_file(fd,argv[2]);
+    //printf("is_file returned %d\n", ret);
 
     /*size_t* entries = malloc(sizeof(size_t));
 
