@@ -1,0 +1,2 @@
+Bonjour, ce fichier est un fichier dans le dir test dir.
+Bien a vous.
