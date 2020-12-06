@@ -50,8 +50,10 @@ int check_archive(int tar_fd) {
         }
 
         unsigned int size = TAR_INT(header->size);
-        if(size!=0){
+        if(size%512!=0){
             lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }else{
+            lseek(tar_fd,((size/512))*512,SEEK_CUR);
         }
     }
 
@@ -109,8 +111,10 @@ int is_dir(int tar_fd, char *path) {
         }
 
         unsigned int size = TAR_INT(header->size);
-        if(size!=0){
+        if(size%512!=0){
             lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }else{
+            lseek(tar_fd,((size/512))*512,SEEK_CUR);
         }
 
     }
@@ -139,8 +143,10 @@ int is_file(int tar_fd, char *path) {
         }
 
         unsigned int size = TAR_INT(header->size);
-        if(size!=0){
+        if(size%512!=0){
             lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }else{
+            lseek(tar_fd,((size/512))*512,SEEK_CUR);
         }
 
     }
@@ -168,8 +174,10 @@ int is_symlink(int tar_fd, char *path) {
         }
 
         unsigned int size = TAR_INT(header->size);
-        if(size!=0){
+        if(size%512!=0){
             lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }else{
+            lseek(tar_fd,((size/512))*512,SEEK_CUR);
         }
 
     }
@@ -204,8 +212,10 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
         }
 
         unsigned int size = TAR_INT(header->size);
-        if(size!=0){
+        if(size%512!=0){
             lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }else{
+            lseek(tar_fd,((size/512))*512,SEEK_CUR);
         }
 
     }
