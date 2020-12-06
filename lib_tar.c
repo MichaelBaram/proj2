@@ -33,7 +33,6 @@ int check_archive(int tar_fd) {
             char* c = (char*) header+i;
             sum += *c;
         }
-
         if(sum==0){
             continue;
         }
@@ -77,7 +76,6 @@ int check_archive(int tar_fd) {
 int exists(int tar_fd, char *path) {
     struct posix_header *header = malloc(sizeof(struct posix_header));
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
-        printf("%s\n",header->name);
         if(strcmp(path,header->name)==0){
             lseek(tar_fd,0,SEEK_SET);
             return 1;
@@ -212,12 +210,8 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
         char* str = calloc(lenPath,sizeof(char));
         char* strToCmp = strncat(str,header->name,lenPath);
 
-        if(strcmp(path,strToCmp)==0){
-          if (index != 0){
-            strcpy(entries[index-1],header->name);
-
-            //printf("strToCmp : %s\n", header->name);
-            }
+        if(strcmp(path,strToCmp)==0 && strcmp(path,header->name)!=0){
+            strcpy(entries[index],header->name);
             index++;
         }
 
