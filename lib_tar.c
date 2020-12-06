@@ -28,19 +28,20 @@ int check_archive(int tar_fd) {
         long sum = 0;
         for(int i =0; i<512;i++){
             if(i>=148&&i<156){
-                sum += ' ';
+                sum += '\0';
             }
             char* c = (char*) header+i;
+            printf("%c",*c);
             sum += *c;
         }
-        if(sum==256){
+        if(sum==0){
             continue;
         }
         if(strcmp(header->magic,TMAGIC)!=0){
             lseek(tar_fd,0,SEEK_SET);
             return -1;
         }
-        if(strcmp(header->version,TVERSION)!=0){
+        if(strncmp(header->version,TVERSION,2)!=0){
             lseek(tar_fd,0,SEEK_SET);
             return -2;
         }
@@ -81,8 +82,10 @@ int exists(int tar_fd, char *path) {
         }
 
         unsigned int size = TAR_INT(header->size);
-        if(size!=0){
+        if(size%512!=0){
             lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }else{
+            lseek(tar_fd,((size/512))*512,SEEK_CUR);
         }
 
     }
