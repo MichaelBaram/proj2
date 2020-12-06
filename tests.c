@@ -27,7 +27,7 @@ void debug_dump(const uint8_t *bytes, size_t len) {
 }
 
 int main(int argc, char **argv) {
-  char* string;
+    char* string;
 
     if (argc < 3) {
         printf("Usage: %s tar_file fichier_existe\n", argv[0]);
@@ -75,8 +75,8 @@ int main(int argc, char **argv) {
     int r = 10; //number of entries in entries
     int c = 100;
     char **entries = (char **)malloc(r * sizeof(char *));
-        for (int i=0; i<r; i++)
-             entries[i] = (char *)malloc(c * sizeof(char));
+    for (int i=0; i<r; i++)
+        entries[i] = (char *)malloc(c * sizeof(char));
     ret = list(fd,argv[2],entries,(size_t *) &r);
     printf("list returned %d\n", ret);
     printf("\n%s", "Entries \n");

@@ -265,20 +265,24 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  *
  */
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) {
-    if(is_file(tar_fd,path)==0){
-        return -1;
-    }
+
     struct posix_header *header = malloc(sizeof(struct posix_header));
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
         unsigned int size = TAR_INT(header->size);
-        if(strcmp(path,header->name)==0){
+        if(strcmp(path,header->name)==0 && (header->typeflag==REGTYPE || header->typeflag==AREGTYPE)){
             if(size<offset){
                 return -2;
             }
             lseek(tar_fd,offset,SEEK_CUR);
-            int byteRead = read(tar_fd,dest,size-offset);
+            int nbByteToRead;
+            if(*len < (size-offset)){
+                nbByteToRead = *len;
+            } else{
+                nbByteToRead = size-offset;
+            }
+            int byteRead = read(tar_fd,dest,nbByteToRead);
             *len = byteRead;
-            return (size-offset) - byteRead;
+            return (ssize_t) (size-offset) - byteRead;
         }
 
 
