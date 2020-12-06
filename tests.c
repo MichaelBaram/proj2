@@ -2,7 +2,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 #include "lib_tar.h"
 
 /**
@@ -69,10 +71,15 @@ int main(int argc, char **argv) {
     else{string = "files is not a symlink";}
     printf("is_symlink returned : %s\n", string);
 
-    /*size_t* entries = malloc(sizeof(size_t));
+printf("%s\n", "TEST LIST\n");
+    int r = 10; //number of entries in entries
+    int c = 100;
+    char **entries = (char **)malloc(r * sizeof(char *));
+        for (int i=0; i<r; i++)
+             entries[i] = (char *)malloc(c * sizeof(char));
 
-    ret = list(fd,argv[2],buf,entries);
-    printf("list returned %d\n", ret);*/
+    ret = list(fd,argv[2],entries,(size_t *) &r);
+    printf("list returned %d\n", ret);
 
     close(fd);
     return 0;
