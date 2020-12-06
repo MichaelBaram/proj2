@@ -31,13 +31,12 @@ int check_archive(int tar_fd) {
                 sum += '\0';
             }
             char* c = (char*) header+i;
-            printf("%c",*c);
             sum += *c;
         }
         if(sum==0){
             continue;
         }
-        printf("SUM : %ld\n CHKSUM : %ld", sum,TAR_INT(header->chksum));
+        printf("\nSUM : %ld\nCHKSUM : %ld\n", sum,TAR_INT(header->chksum));
         if(strcmp(header->magic,TMAGIC)!=0){
             lseek(tar_fd,0,SEEK_SET);
             return -1;
