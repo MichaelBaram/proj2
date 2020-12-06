@@ -79,6 +79,7 @@ int main(int argc, char **argv) {
              entries[i] = (char *)malloc(c * sizeof(char));
     ret = list(fd,argv[2],entries,(size_t *) &r);
     printf("list returned %d\n", ret);
+    printf("\n%s", "Entries \n");
     for(int i=0; i<r;i++){
         printf("entries[%d] = %s\n",i,entries[i]);
     }
