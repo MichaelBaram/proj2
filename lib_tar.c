@@ -240,10 +240,10 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
 
     }
     *no_entries=index;
+    lseek(tar_fd,0,SEEK_SET);
     if(index==0){
         return 0;
     }
-    lseek(tar_fd,0,SEEK_SET);
     return 1;
 }
 
@@ -265,7 +265,7 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  *
  */
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) {
-    if(is_file(tar_fd,path)){
+    if(is_file(tar_fd,path)==0){
         return -1;
     }
     struct posix_header *header = malloc(sizeof(struct posix_header));
