@@ -25,23 +25,30 @@ void debug_dump(const uint8_t *bytes, size_t len) {
 }
 
 int main(int argc, char **argv) {
-    printf("\n%s\n", "------DEBUT DE PROGRAMME DE TEST -----");
-    if (argc < 2) {
-        printf("Usage: %s tar_file\n", argv[0]);
+  char* string;
+
+    if (argc < 3) {
+        printf("Usage: %s tar_file fichier_existe\n", argv[0]);
         return -1;
     }
+    printf("\n------DEBUT DE PROGRAMME DE TEST avec arg : %s %s -----\n",argv[1],argv[2]);
+
 
     int fd = open(argv[1] , O_RDONLY);
     if (fd == -1) {
         perror("open(tar_file)");
         return -1;
     }
-
+    printf("\n%s\n", "------TEST CHECK ARCHIVE -----");
     int ret = check_archive(fd);
     printf("check_archive returned %d\n", ret);
 
-    //ret = exists(fd,argv[2]);
-    //printf("exists returned %d\n", ret);
+    printf("\n------TEST EXISTS fichier : %s-----\n",argv[2]);
+    ret = exists(fd,argv[2]);
+    if(ret == 1){string = "files exists";}
+    else{string = "files does not exist";}
+
+    printf("exists returned : %s\n", string);
 
     //ret = is_dir(fd,argv[2]);
     //printf("is_dir returned %d\n", ret);

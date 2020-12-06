@@ -33,10 +33,12 @@ int check_archive(int tar_fd) {
             char* c = (char*) header+i;
             sum += *c;
         }
+
         if(sum==0){
             continue;
         }
         printf("\nSUM : %ld\nCHKSUM : %ld\n", sum,TAR_INT(header->chksum));
+        printf("Name : %s\n",header->name);
         if(strcmp(header->magic,TMAGIC)!=0){
             lseek(tar_fd,0,SEEK_SET);
             return -1;
