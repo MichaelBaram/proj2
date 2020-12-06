@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include "lib_tar.h"
-#
 
 /**
  * Checks whether the archive is valid.
