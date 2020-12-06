@@ -104,6 +104,13 @@ int is_symlink(int tar_fd, char *path);
 
 
 /**
+ *
+ * @param path
+ * @return la profondeur du path
+ */
+int depthPath(char *path);
+
+/**
  * Lists the entries at a given path in the archive.
  *
  * @param tar_fd A file descriptor pointing to the start of a valid tar archive file.

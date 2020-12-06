@@ -187,7 +187,19 @@ int is_symlink(int tar_fd, char *path) {
     lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
-
+int depthPath(char *path){
+    char* pathCpy = (char *)calloc(strlen(path),sizeof(char));
+    strcpy(pathCpy,path);
+    char *token;
+    size_t NPath = 0;
+    const char delim = '/';
+    token = strtok(pathCpy, &delim);
+    while( token != NULL ) {
+        NPath++;
+        token = strtok(NULL, &delim);
+    }
+    return NPath;
+}
 
 /**
  * Lists the entries at a given path in the archive.
@@ -204,15 +216,18 @@ int is_symlink(int tar_fd, char *path) {
  */
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
     struct posix_header *header = malloc(sizeof(struct posix_header));
-    size_t lenPath = strlen(path);
+    int NPath = depthPath(path);
+    int lenPath = strlen(path);
     int index = 0;
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
-        char* str = calloc(lenPath,sizeof(char));
-        char* strToCmp = strncat(str,header->name,lenPath);
+        if(depthPath(header->name)-1==NPath) {
+            char *str = calloc(lenPath, sizeof(char));
+            char *strToCmp = strncat(str, header->name, lenPath);
 
-        if(strcmp(path,strToCmp)==0 && strcmp(path,header->name)!=0){
-            strcpy(entries[index],header->name);
-            index++;
+            if (strcmp(path, strToCmp) == 0) {
+                strcpy(entries[index], header->name);
+                index++;
+            }
         }
 
         unsigned int size = TAR_INT(header->size);
