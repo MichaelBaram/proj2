@@ -213,8 +213,11 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
         char* strToCmp = strncat(str,header->name,lenPath);
 
         if(strcmp(path,strToCmp)==0){
-            *entries[index] = *header->name;
-            printf("strToCmp : %s\n", header->name);
+          if (index != 0){
+            strcpy(entries[index-1],header->name);
+
+            //printf("strToCmp : %s\n", header->name);
+            }
             index++;
         }
 

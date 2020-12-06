@@ -71,16 +71,20 @@ int main(int argc, char **argv) {
     else{string = "files is not a symlink";}
     printf("is_symlink returned : %s\n", string);
 
-printf("%s\n", "TEST LIST\n");
+printf("\n--------------TEST LIST : %s--------------\n",argv[2]);
     int r = 10; //number of entries in entries
     int c = 100;
     char **entries = (char **)malloc(r * sizeof(char *));
         for (int i=0; i<r; i++)
              entries[i] = (char *)malloc(c * sizeof(char));
-
     ret = list(fd,argv[2],entries,(size_t *) &r);
     printf("list returned %d\n", ret);
 
+    printf("\n%s", "Entries : ");
+    for (int i = 0; i < r-1; i++) {
+        printf("%s | ", entries[i]);
+    }
+    printf("\n");
     close(fd);
     return 0;
 }
