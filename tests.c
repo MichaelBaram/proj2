@@ -47,14 +47,27 @@ int main(int argc, char **argv) {
     ret = exists(fd,argv[2]);
     if(ret == 1){string = "files exists";}
     else{string = "files does not exist";}
-
     printf("exists returned : %s\n", string);
 
-    //ret = is_dir(fd,argv[2]);
-    //printf("is_dir returned %d\n", ret);
+    printf("\n------TEST IS DIRECTORY fichier : %s-----\n",argv[2]);
+    ret = is_dir(fd,argv[2]);
+    if(ret == 1){string = "files is a directory";}
+    else{string = "files is not a directory";}
+    printf("is_dir returned : %s\n", string);
 
-    //ret = is_file(fd,argv[2]);
-    //printf("is_file returned %d\n", ret);
+
+    printf("\n------TEST IS FILE fichier : %s-----\n",argv[2]);
+    ret = is_file(fd,argv[2]);
+    if(ret == 1){string = "files is a file";}
+    else{string = "files is not a file";}
+    printf("is_file returned : %s\n", string);
+
+
+    printf("\n------TEST IS SYMLINK fichier : %s-----\n",argv[2]);
+    ret = is_symlink(fd,argv[2]);
+    if(ret == 1){string = "files is a symlink";}
+    else{string = "files is not a symlink";}
+    printf("is_symlink returned : %s\n", string);
 
     /*size_t* entries = malloc(sizeof(size_t));
 
