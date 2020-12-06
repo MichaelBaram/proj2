@@ -37,6 +37,7 @@ int check_archive(int tar_fd) {
         if(sum==0){
             continue;
         }
+        printf("SUM : %ld\n CHKSUM : %ld", sum,TAR_INT(header->chksum));
         if(strcmp(header->magic,TMAGIC)!=0){
             lseek(tar_fd,0,SEEK_SET);
             return -1;
