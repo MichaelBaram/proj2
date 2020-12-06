@@ -38,7 +38,7 @@ int check_archive(int tar_fd) {
         if(sum==256){
             break;
         }
-        
+
         if(strcmp(header->magic,TMAGIC)!=0){
             lseek(tar_fd,0,SEEK_SET);
             return -1;
@@ -265,5 +265,30 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
  *
  */
 ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *len) {
-    return 0;
+    if(is_file(tar_fd,path)){
+        return -1;
+    }
+    struct posix_header *header = malloc(sizeof(struct posix_header));
+    while(read(tar_fd,header, sizeof(struct posix_header))>0){
+        unsigned int size = TAR_INT(header->size);
+        if(strcmp(path,header->name)==0){
+            if(size<offset){
+                return -2;
+            }
+            lseek(tar_fd,offset,SEEK_CUR);
+            int byteRead = read(tar_fd,dest,size-offset);
+            *len = byteRead;
+            return (size-offset) - byteRead;
+        }
+
+
+        if(size%512!=0){
+            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }else{
+            lseek(tar_fd,((size/512))*512,SEEK_CUR);
+        }
+
+    }
+    lseek(tar_fd,0,SEEK_SET);
+    return -1;
 }

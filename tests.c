@@ -83,6 +83,13 @@ int main(int argc, char **argv) {
     for(int i=0; i<r;i++){
         printf("entries[%d] = %s\n",i,entries[i]);
     }
+
+    printf("\n-------TEST READ FILE : %s-----\n",argv[2]);
+    int len = 10000;
+    uint8_t* dest = (uint8_t*) malloc(len * sizeof(char *));
+    ret = read_file(fd,argv[2],0,dest,(size_t *) &len);
+    printf("read_file returned %d\n", ret);
+    printf("dest = %s\n",dest);
     close(fd);
     return 0;
 }
