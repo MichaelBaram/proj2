@@ -223,6 +223,7 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
     int index = 0;
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
         if(depthPath(header->name)-1==NPath) {
+          //verifie si le fichier un repertoire de plus que le path
             char *str = calloc(lenPath, sizeof(char));
             char *strToCmp = strncat(str, header->name, lenPath);
 
@@ -297,3 +298,5 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
     lseek(tar_fd,0,SEEK_SET);
     return -1;
 }
+//2 tests list avec symbollink;
+// et symboling de read_file;
