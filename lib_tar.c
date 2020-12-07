@@ -23,6 +23,7 @@
  *         -3 if the archive contains a header with an invalid checksum value
  */
 int check_archive(int tar_fd) {
+    int nbHeaders = 0;
     struct posix_header *header = malloc(sizeof(struct posix_header));
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
         long sum = 0;
@@ -51,7 +52,7 @@ int check_archive(int tar_fd) {
             lseek(tar_fd,0,SEEK_SET);
             return -3;
         }
-
+        nbHeaders++;
         unsigned int size = TAR_INT(header->size);
         if(size%512!=0){
             lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
@@ -62,7 +63,7 @@ int check_archive(int tar_fd) {
 
     lseek(tar_fd,0,SEEK_SET);
 
-    return 0;
+    return nbHeaders;
 }
 
 /**
@@ -225,7 +226,7 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
             char *str = calloc(lenPath, sizeof(char));
             char *strToCmp = strncat(str, header->name, lenPath);
 
-            if (strcmp(path, strToCmp) == 0) {
+            if (strcmp(path, strToCmp) == 0 && *no_entries>index) {
                 strcpy(entries[index], header->name);
                 index++;
             }
