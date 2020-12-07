@@ -167,10 +167,12 @@ int is_file(int tar_fd, char *path) {
  * @return zero if no entry at the given path exists in the archive or the entry is not symlink,
  *         any other value otherwise.
  */
+
+ //printf("Header name : %s\nHeader flag : %c\n", header->name,header->typeflag);
 int is_symlink(int tar_fd, char *path) {
     struct posix_header *header = malloc(sizeof(struct posix_header));
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
-        printf("Header name : %s\nHeader flag : %c\n", header->name,header->typeflag);
+
 
         if(strcmp(path,header->name)==0){
 

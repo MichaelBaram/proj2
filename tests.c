@@ -2,10 +2,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include "lib_tar.h"
+#include <unistd.h>
+
+#define BUFSIZE 100
 
 /**
  * You are free to use this file to write tests for your implementation
@@ -27,8 +29,6 @@ void debug_dump(const uint8_t *bytes, size_t len) {
 }
 
 int main(int argc, char **argv) {
-    char* string;
-
     if (argc < 3) {
         printf("Usage: %s tar_file fichier_existe\n", argv[0]);
         return -1;
@@ -36,6 +36,7 @@ int main(int argc, char **argv) {
     printf("\n------DEBUT DE PROGRAMME DE TEST avec arg : %s %s -----\n",argv[1],argv[2]);
 
 
+char* string;
     int fd = open(argv[1] , O_RDONLY);
     if (fd == -1) {
         perror("open(tar_file)");
@@ -67,7 +68,13 @@ int main(int argc, char **argv) {
 
     printf("\n------TEST IS SYMLINK fichier : %s-----\n",argv[2]);
     ret = is_symlink(fd,argv[2]);
-    if(ret == 1){string = "files is a symlink";}
+    if(ret == 1){
+        char bufslink[BUFSIZE];
+        int sizelink;
+        string = "files is a symlink";
+        sizelink = readlink( argv[2], bufslink, (BUFSIZE*sizeof(char)) );
+        printf("symlink : %s\nsize : %d\n", bufslink,sizelink);
+    }
     else{string = "files is not a symlink";}
     printf("is_symlink returned : %s\n", string);
 
