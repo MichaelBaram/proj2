@@ -1,1 +1,0 @@
-ceci est un fichier qui est pointe par un symbolink

@@ -170,9 +170,11 @@ int is_file(int tar_fd, char *path) {
 int is_symlink(int tar_fd, char *path) {
     struct posix_header *header = malloc(sizeof(struct posix_header));
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
+        printf("Header name : %s\nHeader flag : %c\n", header->name,header->typeflag);
 
         if(strcmp(path,header->name)==0){
-            if(header->typeflag==LNKTYPE){
+
+            if(header->typeflag==SYMTYPE){
                 lseek(tar_fd,0,SEEK_SET);
                 return 1;
             }
