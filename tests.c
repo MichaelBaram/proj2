@@ -33,6 +33,12 @@ int main(int argc, char **argv) {
         printf("Usage: %s tar_file fichier_existe\n", argv[0]);
         return -1;
     }
+    /*
+    char * slinkt = "Hello/hello2/test";
+    char tt [10];
+    findfilefromslink(slinkt,tt,"world");
+    printf("TT:  %s\n", tt);
+    */
     printf("\n------DEBUT DE PROGRAMME DE TEST avec arg : %s %s -----\n",argv[1],argv[2]);
 
 

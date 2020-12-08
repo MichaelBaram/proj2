@@ -226,6 +226,34 @@ void error(int err,char *msg){
     fprintf(stderr,"%s a retourné %d, message d'erreur : %s\n", msg,err,strerror(errno));
     exit(EXIT_FAILURE);
 }
+    void deleten (char* path, char* buf, int nchar){
+        //suppose buf is long enough
+        int size  = strlen(path);
+        int i = 0;
+        while (i<size && i<(size-nchar)) {
+            buf[i] = path[i];
+            i++;
+        }
+    }
+    void findfilefromslink (char* slink, char* buf,char* filename){
+        // sizenamelink : size of name of link. Ex: dirarchive/myslink,
+        //int sizenamelink = 7
+        // filename est testsym.txt par exemple.
+        //suppose buf is long enough;
+        // slink : dirarchive/myslink par exemple
+        int sizenamelink=0;
+        int sizelink = strlen(slink);
+        int i = sizelink-1;
+        while(i>=0){
+            if(slink[i]=='/')break;
+            sizenamelink++;
+            i--;
+        }
+        deleten(slink,buf,sizenamelink);
+        strcat(buf,filename);
+        printf("Le path fichier qui est pointe par le slink : %s\n", buf);
+    }
+
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
     struct posix_header *header = malloc(sizeof(struct posix_header));
     int NPath = depthPath(path);
@@ -240,13 +268,16 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
 
            if (strcmp(path, strToCmp) == 0 && *no_entries>index) {
                if (header->typeflag==SYMTYPE) {
-                   //char *bufslink = (char*) malloc(BUFSIZE*sizeof(char));
+                   char filename[BUFSIZE];
                    char bufslink[BUFSIZE];
                    int sizelink;
-                   sizelink = readlink( header->name, bufslink, (BUFSIZE*sizeof(char)));
+                   sizelink = readlink( header->name, filename, (BUFSIZE*sizeof(char)));
                    if(sizelink == -1) error(sizelink,"readlink");
-                   bufslink[sizelink] = '\0';
-                   //printf("----BUFSLINK 2: %s, SIZE : %d\n",bufslink,sizelink );
+                   filename[sizelink] = '\0';
+
+                   printf("----Nom du fichier pointe par slink: %s, SIZE : %d\n",filename,sizelink );
+                   findfilefromslink(header->name,bufslink,filename);
+                   printf("----BUFSLINK 2: %s, SIZE : %d\n",bufslink,sizelink );
 
                    strcpy(entries[index], bufslink);
                }
@@ -309,6 +340,20 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
             int byteRead = read(tar_fd,dest,nbByteToRead);
             *len = byteRead;
             return (ssize_t) (size-offset) - byteRead;
+        }
+        if (header->typeflag==SYMTYPE) {
+
+            //char *bufslink = (char*) malloc(BUFSIZE*sizeof(char));
+            char filename[BUFSIZE];
+            char bufslink[BUFSIZE];
+            int sizelink;
+            sizelink = readlink( header->name, filename, (BUFSIZE*sizeof(char)));
+            if(sizelink == -1) error(sizelink,"readlink");
+            filename[sizelink] = '\0';
+
+            printf("----Nom du fichier pointe par slink: %s, SIZE : %d\n",filename,sizelink );
+            findfilefromslink(header->name,bufslink,filename);
+            return read_file(tar_fd, bufslink,offset,dest,len);
         }
 
 
