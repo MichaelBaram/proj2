@@ -6,7 +6,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include "lib_tar.h"
-
+#include <errno.h>
+#define BUFSIZE 100
 /**
  * Checks whether the archive is valid.
  *
@@ -220,31 +221,50 @@ int depthPath(char *path){
  * @return zero if no directory at the given path exists in the archive,
  *         any other value otherwise.
  */
+
+void error(int err,char *msg){
+    fprintf(stderr,"%s a retourné %d, message d'erreur : %s\n", msg,err,strerror(errno));
+    exit(EXIT_FAILURE);
+}
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
     struct posix_header *header = malloc(sizeof(struct posix_header));
     int NPath = depthPath(path);
     int lenPath = strlen(path);
     int index = 0;
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
+
         if(depthPath(header->name)-1==NPath) {
-          //verifie si le fichier un repertoire de plus que le path
-            char *str = calloc(lenPath, sizeof(char));
-            char *strToCmp = strncat(str, header->name, lenPath);
+         //verifie si le fichier un repertoire de plus que le path
+           char *str = calloc(lenPath, sizeof(char));
+           char *strToCmp = strncat(str, header->name, lenPath);
 
-            if (strcmp(path, strToCmp) == 0 && *no_entries>index) {
-                strcpy(entries[index], header->name);
-                index++;
-            }
-        }
+           if (strcmp(path, strToCmp) == 0 && *no_entries>index) {
+               if (header->typeflag==SYMTYPE) {
+                   //char *bufslink = (char*) malloc(BUFSIZE*sizeof(char));
+                   char bufslink[BUFSIZE];
+                   int sizelink;
+                   sizelink = readlink( header->name, bufslink, (BUFSIZE*sizeof(char)));
+                   if(sizelink == -1) error(sizelink,"readlink");
+                   bufslink[sizelink] = '\0';
+                   //printf("----BUFSLINK 2: %s, SIZE : %d\n",bufslink,sizelink );
 
-        unsigned int size = TAR_INT(header->size);
-        if(size%512!=0){
-            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
-        }else{
+                   strcpy(entries[index], bufslink);
+               }
+               else{
+                   strcpy(entries[index], header->name);
+               }
+               index++;
+           }
+       }
+   }
+
+       unsigned int size = TAR_INT(header->size);
+       if(size%512!=0){
+           lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+       }
+       else{
             lseek(tar_fd,((size/512))*512,SEEK_CUR);
         }
-
-    }
     *no_entries=index;
     lseek(tar_fd,0,SEEK_SET);
     if(index==0){
