@@ -110,6 +110,8 @@ int is_symlink(int tar_fd, char *path);
  */
 int depthPath(char *path);
 
+char* getEndPath(char *path,int lenPath);
+
 /**
  * Lists the entries at a given path in the archive.
  *
