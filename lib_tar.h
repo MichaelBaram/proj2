@@ -103,14 +103,6 @@ int is_file(int tar_fd, char *path);
 int is_symlink(int tar_fd, char *path);
 
 
-/**
- *
- * @param path
- * @return la profondeur du path
- */
-int depthPath(char *path);
-
-char* getEndPath(char *path,int lenPath);
 
 /**
  * Lists the entries at a given path in the archive.

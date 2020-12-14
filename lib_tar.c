@@ -61,9 +61,8 @@ int check_archive(int tar_fd) {
             lseek(tar_fd,((size/512))*512,SEEK_CUR);
         }
     }
-
+	free(header);
     lseek(tar_fd,0,SEEK_SET);
-
     return nbHeaders;
 }
 
@@ -92,6 +91,7 @@ int exists(int tar_fd, char *path) {
         }
 
     }
+    free(header);
     lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
@@ -124,6 +124,7 @@ int is_dir(int tar_fd, char *path) {
         }
 
     }
+    free(header);
     lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
@@ -156,6 +157,7 @@ int is_file(int tar_fd, char *path) {
         }
 
     }
+    free(header);
     lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
@@ -191,41 +193,11 @@ int is_symlink(int tar_fd, char *path) {
         }
 
     }
+    free(header);
     lseek(tar_fd,0,SEEK_SET);
     return 0;
 }
 
-void error(int err,char *msg){
-    fprintf(stderr,"%s a retourné %d, message d'erreur : %s\n", msg,err,strerror(errno));
-    exit(EXIT_FAILURE);
-}
-void deleten (char* path, char* buf, int nchar){
-    //suppose buf is long enough
-    int size  = strlen(path);
-    int i = 0;
-    while (i<size && i<(size-nchar)) {
-        buf[i] = path[i];
-        i++;
-    }
-}
-void findfilefromslink (char* slink, char* buf,char* filename){
-    // sizenamelink : size of name of link. Ex: dirarchive/myslink,
-    //int sizenamelink = 7
-    // filename est testsym.txt par exemple.
-    //suppose buf is long enough;
-    // slink : dirarchive/myslink par exemple
-    int sizenamelink=0;
-    int sizelink = strlen(slink);
-    int i = sizelink-1;
-    while(i>=0){
-        if(slink[i]=='/')break;
-        sizenamelink++;
-        i--;
-    }
-    deleten(slink,buf,sizenamelink);
-    strcat(buf,filename);
-    printf("Le path fichier qui est pointe par le slink : %s\n", buf);
-}
 
 
 
@@ -245,22 +217,45 @@ int depthPath(char *path){
 }
 
 char* getEndPath(char *path,int lenPath){
-    char* pathCpy = (char *)calloc(strlen(path),sizeof(char));
-    strcpy(pathCpy,path);
     int len = 0;
     const char delim = '/';
-    char* token = strtok(pathCpy, &delim);
-    while( len < lenPath ) {
+    char* token = strtok(path, &delim);
+    while( len < lenPath-1 ) {
         len++;
+
         token = strtok(NULL, &delim);
     }
     return token;
 }
 
-char* getStartPath(char *path){
-    char* lastSlash = strrchr(path,'/');
-    *(lastSlash+1) = '\0';
-    return path;
+
+
+
+int findPathFromFilename(int tar_fd, char *path,char *filename){
+
+    struct posix_header *header = malloc(sizeof(struct posix_header));
+    while(read(tar_fd,header, sizeof(struct posix_header))>0){
+
+        char* pathCpy = (char *)calloc(strlen(header->name),sizeof(char));
+        strcpy(pathCpy,header->name);
+        if(getEndPath(pathCpy,depthPath(pathCpy)) != NULL && strcmp(filename,getEndPath(pathCpy,depthPath(pathCpy)))==0){
+                free(pathCpy);
+                strcpy(path,header->name);
+                lseek(tar_fd,0,SEEK_SET);
+                return 1;
+        }
+        free(pathCpy);
+        unsigned int size = TAR_INT(header->size);
+        if(size%512!=0){
+            lseek(tar_fd,((size/512)+1)*512,SEEK_CUR);
+        }else{
+            lseek(tar_fd,((size/512))*512,SEEK_CUR);
+        }
+
+    }
+    free(header);
+    lseek(tar_fd,0,SEEK_SET);
+    return 0;
 }
 
 /**
@@ -280,28 +275,37 @@ char* getStartPath(char *path){
 
 
 int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
+
+    if(is_dir(tar_fd,path)==0 && is_symlink(tar_fd,path)==0) {
+        *no_entries=0;
+        return 0;
+    }
     struct posix_header *header = malloc(sizeof(struct posix_header));
     int NPath = depthPath(path);
     int lenPath = strlen(path);
     int index = 0;
     while(read(tar_fd,header, sizeof(struct posix_header))>0){
+
         if (strcmp(path, header->name) == 0 && header->typeflag==SYMTYPE) {
+
+            char* pathCpy = (char *)calloc(strlen(header->linkname),sizeof(char));
+            strcpy(pathCpy,header->linkname);
             lseek(tar_fd,0,SEEK_SET);
-            return list(tar_fd,header->linkname,entries,no_entries);
+            char* pathToFind = calloc(100, sizeof(char));
+            findPathFromFilename(tar_fd,pathToFind,getEndPath(pathCpy,depthPath(pathCpy)));
+            free(pathCpy);
+            return list(tar_fd,pathToFind,entries,no_entries);
         }
+
         if(depthPath(header->name)-1==NPath) {
             //verifie si le fichier un repertoire de plus que le path
             char *str = calloc(lenPath, sizeof(char));
             char *strToCmp = strncat(str, header->name, lenPath);
 
             if (strcmp(path, strToCmp) == 0 && *no_entries>index) {
-                if(header->typeflag==SYMTYPE){
-                    strcpy(entries[index], header->linkname);
-                    index++;
-                }else{
                     strcpy(entries[index],header->name);
                     index++;
-                }
+
             }
         }
     }
@@ -315,9 +319,7 @@ int list(int tar_fd, char *path, char **entries, size_t *no_entries) {
     }
     *no_entries=index;
     lseek(tar_fd,0,SEEK_SET);
-    if(index==0){
-        return 0;
-    }
+    free(header);
     return 1;
 }
 
@@ -373,9 +375,9 @@ ssize_t read_file(int tar_fd, char *path, size_t offset, uint8_t *dest, size_t *
         }
 
     }
+    free(header);
     lseek(tar_fd,0,SEEK_SET);
     return -1;
 }
-//2 tests list avec symbollink;
-// et symboling de read_file;
+
 
